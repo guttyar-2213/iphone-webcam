@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head><meta charset=utf-8></head>
+  <body>
+    <video id="view" playsinline autoplay></video>
+    <select id="source"></select>
+    <script>
+    await (async()=>{
+      const getMedia = async (id) => await navigator.mediaDevices.getUserMedia({ video: id == null ? true : { deviceId: id } })
+      await getMedia()
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      const view = document.getElementById("view")
+      const source = document.getElementById("source")
+      devices.map(e => {
+        const el = document.createElement("option")
+        el.setAttribute("value", e.deviceId)
+        el.innerText = e.label
+        if (e.kind === "videoinput") target.appendChild(el)
+      }
+      const select = () => getMedia(source.value).then(obj => { view.srcObj = obj })
+      source.addEventListener("input", select)
+      select()
+    })()
+    </script>
+  </body>
+</html>
