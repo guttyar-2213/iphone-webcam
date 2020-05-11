@@ -5,7 +5,7 @@
     <video id="view" playsinline autoplay></video>
     <select id="source"></select>
     <script>
-      const getMedia = async (id) => await navigator.mediaDevices.getUse    rMedia({ video: id == null ? true : { deviceId: id } })
+      const getMedia = async (id) => await navigator.mediaDevices.getUserMedia({ video: id == null ? true : { deviceId: id } })
       await getMedia()
       const devices = await navigator.mediaDevices.enumerateDevices()
       const view = document.getElementById("view")
