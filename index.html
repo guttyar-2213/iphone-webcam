@@ -9,13 +9,8 @@
 		<select id="device"></select>
 		<span id="self"></span>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+		<script src="common.js"></script>
 		<script>
-			const eventPromise = (target, type, callback) =>
-				new Promise((r) =>
-					target.addEventListener(type, (e) => {
-						callback(e, r);
-					})
-				);
 			const onPromise = (socket, type, callback) => new Promise((r) => socket.on(type, (d) => callback(d, r)));
 			const getSources = () => navigator.mediaDevices.enumerateDevices();
 			const updateSourcesList = (source, select) => {
@@ -49,7 +44,7 @@
 			};
 			(async () => {
 				const socket = io("guttyar2213.local:5000");
-				const sockon = (type) => onPromise(socket, type, (d, r) => r(d));
+				const sockon = (type) => onPromise(socket, type, (d, r) => r(d.value));
 				const view = document.getElementById("view");
 				const source = document.getElementById("source");
 				const device = document.getElementById("device");
