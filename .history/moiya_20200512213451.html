@@ -7,7 +7,9 @@
 	<body>
 		<video autoplay id="view"></video>
 		<select id="source"></select>
-		<button id="rb">reload</button>
+		<textarea id="send"></textarea>
+		<textarea id="recv"></textarea>
+		<button id="rb"></button>
 		<script>
 			const getSources = () => navigator.mediaDevices.enumerateDevices();
 			const updateSourcesList = (sources, select) => {
@@ -23,7 +25,7 @@
 				navigator.mediaDevices.getUserMedia({
 					video: { deviceId: id /* width: { ideal: 4096 }, height: { ideal: 2160 } */ },
 				});
-			const create = (view, media) => {
+			const create = (view, media, send) => {
 				const pc = new RTCPeerConnection({ iceServers: [] });
 				pc.addEventListener("icecandidate", (e) => {
 					if (e.candidate) {
@@ -36,7 +38,9 @@
 							body: JSON.stringify({ type: "server", value: pc.localDescription.toJSON() }),
 						})
 							.then((r) => r.json())
-							.then((r) => globalThis.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(r))));
+							.then((r) => {
+								globalThis.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(r)));
+							});
 					}
 				});
 				pc.addEventListener("connectionstatechange", () => {
@@ -51,6 +55,8 @@
 			(async () => {
 				const view = document.getElementById("view");
 				const source = document.getElementById("source");
+				const send = document.getElementById("send");
+				const recv = document.getElementById("recv");
 				const rb = document.getElementById("rb");
 				await getMedia();
 				updateSourcesList(await getSources(), source);
@@ -59,10 +65,12 @@
 						view.srcObject = media;
 						view.play();
 						if (globalThis.pc) pc.close();
-						globalThis.pc = create(view, media);
+						globalThis.pc = create(view, media, send);
 					});
 				source.addEventListener("input", onSourceChange);
-				rb.addEventListener("click", onSourceChange);
+				rb.addEventListener("click", () => {
+					globalThis.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(recv.value)));
+				});
 				onSourceChange();
 			})();
 		</script>
