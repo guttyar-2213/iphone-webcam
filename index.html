@@ -7,28 +7,43 @@
 		<video id="view" playsinline autoplay></video>
 		<select id="source"></select>
 		<script>
-			(async () => {
-				const getMedia = async (id) =>
-					await navigator.mediaDevices.getUserMedia({
-						video: { deviceId: id, width: { ideal: 4096 }, height: { ideal: 2160 } },
-					});
-				await getMedia();
-				const devices = await navigator.mediaDevices.enumerateDevices();
-				const view = document.getElementById("view");
-				const source = document.getElementById("source");
-				devices.map((e) => {
-					const el = document.createElement("option");
-					el.setAttribute("value", e.deviceId);
-					el.innerText = e.label;
-					if (e.kind === "videoinput") source.appendChild(el);
-				});
-				const select = () =>
-					getMedia(source.value).then((obj) => {
-						view.srcObject = obj;
-					});
-				source.addEventListener("input", select);
-				select();
-			})();
+			      const getDevices = () => navigator.mediaDevices.enumerateDevices();
+						const updateSourcesList = (devices, select) => {
+							select.innerHTML = "";
+							for (const device of devices) {
+								const el = document.createElement("option");
+								el.setAttribute("value", device.deviceId);
+								el.innerText = device.label;
+								if (device.kind === "videoinput") select.appendChild(el);
+							}
+						};
+			      const createP2P = (media) => {
+			        const pc = new RTCPeerConnection();
+
+			for (const track of media.getTracks()) {
+			  pc.addTrack(track, media);
+			}
+			const offer = await pc.createOffer();
+
+			await pc.setLocalDescription(offer);
+
+			      }
+			      const getMedia = (id) =>
+							navigator.mediaDevices.getUserMedia({
+								video: { deviceId: id, width: { ideal: 4096 }, height: { ideal: 2160 } },
+							});
+						const updateMedia = (view, media) => {
+							view.srcObject = media;
+			      };
+						(async () => {
+							const view = document.getElementById("view");
+							const source = document.getElementById("source");
+							await getMedia(); // Permission test, ここで取得できなければ処理終了
+							updateSourcesList(await getDevices(), source);
+							const select = () => getMedia(source.value).then((media) => updateMedia(view, media));
+							source.addEventListener("input", select);
+							select();
+						})();
 		</script>
 	</body>
 </html>
