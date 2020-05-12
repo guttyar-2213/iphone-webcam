@@ -27,7 +27,7 @@
 				const pc = new RTCPeerConnection({ iceServers: [] });
 				pc.addEventListener("icecandidate", (e) => {
 					if (e.candidate) {
-						fetch("https://guttyar2213.local:5000", {
+						fetch("https://guttyar2213.local:5000/", {
 							method: "POST",
 							cache: "no-cache",
 							headers: {
