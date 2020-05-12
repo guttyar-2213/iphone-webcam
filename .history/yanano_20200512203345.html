@@ -31,7 +31,7 @@
 						if (pc.connectionState == "connected" || pc.connectionState == "connecting") return;
 						location.reload();
 					});
-					// pc.addTransceiver("video", { direction: "recvonly" });
+					pc.addTransceiver("video", { direction: "recvonly" });
 					pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(recv.value)))
 						.then(() => pc.createAnswer())
 						.then((a) => pc.setLocalDescription(a));
