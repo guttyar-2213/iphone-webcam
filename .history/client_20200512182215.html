@@ -28,7 +28,6 @@
 			};
 			let connecting = "";
 			const socket = io("https://guttyar2213.local:5000", { rejectUnauthorized: false });
-			socket.emit("client", { to: null, value: null });
 			socket.on("self", (e) => {
 				document.getElementById("self").innerText = e.value;
 			});

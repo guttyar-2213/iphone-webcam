@@ -7,7 +7,6 @@ const io = require("socket.io")(server);
 server.listen(5000);
 const { v4 } = require("uuid");
 const sockets = new Map();
-const clients = new Map();
 
 const createID = (sockets) => {
 	let id = "";
@@ -25,19 +24,12 @@ const broadcast = (from, type, value) => {
 	if (!type) return;
 	io.emit(type, { from, value });
 };
-const on = (socket, type, id) =>
-	socket.on(type, (e) => {
-		console.log(type, id);
-		send(id, e.to, type, e.value);
-	});
-const updateSockets = () => broadcast(null, "device", [...clients.keys()]);
+const on = (socket, type, id) => socket.on(type, (e) => send(id, e.to, type, e.value));
+const updateSockets = () => broadcast(null, "device", [...sockets.keys()]);
 
 io.on("connection", (socket) => {
 	const id = createID(sockets);
 	sockets.set(id, socket);
-	socket.on("client", () => {
-		clients.set(id, socket);
-	});
 	send(null, id, "self", id);
 	updateSockets();
 	on(socket, "offer", id);
@@ -47,6 +39,6 @@ io.on("connection", (socket) => {
 	socket.on("disconnect", () => {
 		sockets.delete(id);
 		updateSockets();
-		console.log("user disconnected", id);
+		console.log("user disconnected");
 	});
 });

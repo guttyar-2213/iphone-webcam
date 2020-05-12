@@ -35,7 +35,7 @@ const updateSockets = () => broadcast(null, "device", [...clients.keys()]);
 io.on("connection", (socket) => {
 	const id = createID(sockets);
 	sockets.set(id, socket);
-	socket.on("client", () => {
+	socket.on("client", (e) => {
 		clients.set(id, socket);
 	});
 	send(null, id, "self", id);
