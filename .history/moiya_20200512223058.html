@@ -42,7 +42,7 @@
 							body: tosp({ type: "server", value: pc.localDescription.toJSON() }),
 						})
 							.then((r) => {
-								console.log(r.text());
+								console.log(r);
 								return r.json();
 							})
 							.then((r) => globalThis.pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(r))));
