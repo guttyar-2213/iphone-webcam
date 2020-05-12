@@ -1,10 +1,8 @@
 const fs = require("fs");
-const server = require("https").createServer({
-	key: fs.readFileSync("/Users/Nagase/Desktop/oreore/server.key"),
-	cert: fs.readFileSync("/Users/Nagase/Desktop/oreore/server.crt"),
+const io = require("socket.io").listen(5000, {
+	key: fs.readFileSync("$HOME/oreore/server.key"),
+	cert: fs.readFileSync("$HOME/oreore/server.crt"),
 });
-const io = require("socket.io")(server);
-server.listen(5000);
 const { v4 } = require("uuid");
 const sockets = new Map();
 
