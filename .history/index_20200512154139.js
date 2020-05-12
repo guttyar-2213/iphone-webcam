@@ -12,26 +12,27 @@ const createID = (sockets) => {
 const send = (from, to, type, value) => {
 	const socket = sockets.get(to);
 	if (!socket || !to || !type) return;
-	socket.emit(type, { from, value });
+	socket.emit(type, { from, value }, console.log.bind(null, "SEND"));
+	console.log(from, to, type, value);
 };
-const broadcast = (from, type, value) => {
-	if (!type) return;
-	io.emit(type, { from, value });
+const on = (socket, type, id) => {
+	socket.on(type, (e) => {
+		send(id, e.to, type, e.value);
+	});
 };
-const on = (socket, type, id) => socket.on(type, (e) => send(id, e.to, type, e.value));
-const updateSockets = () => broadcast(null, "device", [...sockets.keys()]);
 
 io.on("connection", (socket) => {
 	const id = createID(sockets);
+	send(null, id, "device", [...sockets.keys()]);
 	sockets.set(id, socket);
-	updateSockets();
 	send(null, id, "self", id);
-	/* on(socket, "offer", id);
-	on(socket, "answer", id); */
+	on(socket, "offer", id);
+	on(socket, "answer", id);
 	console.log("a user connected", id);
-	socket.on("disconnect", () => {
-		sockets.delete(id);
-		updateSockets();
-		console.log("user disconnected");
-	});
+
+	const hahaha = () => {
+		io.emit("hahaha", id);
+		setTimeout(hahaha, 5000);
+	};
+	hahaha();
 });

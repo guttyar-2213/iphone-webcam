@@ -9,8 +9,6 @@
 		<script src="common.js"></script>
 		<script>
 			const socket = io("guttyar2213.local:5000");
-			socket.on("device", console.log);
-			socket.on("self", console.log);
 			let pc = new RTCPeerConnection();
 			const check = () => {
 				const state = pc.connectionState;

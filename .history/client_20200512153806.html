@@ -9,8 +9,6 @@
 		<script src="common.js"></script>
 		<script>
 			const socket = io("guttyar2213.local:5000");
-			socket.on("device", console.log);
-			socket.on("self", console.log);
 			let pc = new RTCPeerConnection();
 			const check = () => {
 				const state = pc.connectionState;
@@ -18,6 +16,11 @@
 				pc = new RTCPeerConnection();
 				return true;
 			};
+			socket.on("hahaha", console.log);
+			(async () => {
+				console.log(await onPromise(socket, "device", (d, r) => r(d)));
+				console.log(await onPromise(socket, "self", (d, r) => r(d)));
+			})();
 			socket.on("offer", async (e) => {
 				if (!check()) {
 					socket.emit("answer", { to: e.from, value: null });

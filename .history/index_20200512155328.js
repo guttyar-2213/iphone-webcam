@@ -19,18 +19,17 @@ const broadcast = (from, type, value) => {
 	io.emit(type, { from, value });
 };
 const on = (socket, type, id) => socket.on(type, (e) => send(id, e.to, type, e.value));
-const updateSockets = () => broadcast(null, "device", [...sockets.keys()]);
+const updateSockets = () => broadcast([...sockets.keys()]);
 
 io.on("connection", (socket) => {
 	const id = createID(sockets);
 	sockets.set(id, socket);
 	updateSockets();
 	send(null, id, "self", id);
-	/* on(socket, "offer", id);
-	on(socket, "answer", id); */
+	on(socket, "offer", id);
+	on(socket, "answer", id);
 	console.log("a user connected", id);
 	socket.on("disconnect", () => {
-		sockets.delete(id);
 		updateSockets();
 		console.log("user disconnected");
 	});

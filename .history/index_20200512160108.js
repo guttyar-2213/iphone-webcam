@@ -9,11 +9,11 @@ const createID = (sockets) => {
 	} while (sockets.has(id));
 	return id;
 };
-const send = (from, to, type, value) => {
+/* const send = (from, to, type, value) => {
 	const socket = sockets.get(to);
 	if (!socket || !to || !type) return;
 	socket.emit(type, { from, value });
-};
+}; */
 const broadcast = (from, type, value) => {
 	if (!type) return;
 	io.emit(type, { from, value });
@@ -25,12 +25,11 @@ io.on("connection", (socket) => {
 	const id = createID(sockets);
 	sockets.set(id, socket);
 	updateSockets();
-	send(null, id, "self", id);
-	/* on(socket, "offer", id);
+	/* send(null, id, "self", id);
+	on(socket, "offer", id);
 	on(socket, "answer", id); */
 	console.log("a user connected", id);
 	socket.on("disconnect", () => {
-		sockets.delete(id);
 		updateSockets();
 		console.log("user disconnected");
 	});

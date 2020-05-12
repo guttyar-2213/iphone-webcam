@@ -49,7 +49,7 @@
 				const device = document.getElementById("device");
 				await getMedia(); // Permission test, ここで取得できなければ処理終了
 				updateSourcesList(await getSources(), source);
-				socket.on("device", (d) => updateDevicesList(d.value, device));
+				updateDevicesList(await sockon("device"), device);
 				document.getElementById("self").innerText = await sockon("self");
 				const onSourceChange = () =>
 					getMedia(source.value).then(async (media) => {
