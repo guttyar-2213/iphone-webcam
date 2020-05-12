@@ -5,37 +5,20 @@
 	</head>
 	<body>
 		<span id="self"></span>
-		<video id="view" playsinline autoplay></video>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 		<script src="common.js"></script>
 		<script>
-			const view = document.getElementById("view");
-			let pc = null;
-			const newpc = (check) => {
-				if (pc) pc.close();
-				pc = new RTCPeerConnection();
-				pc.addEventListener("track", (e) => {
-					view.srcObject = e.streams[0];
-				});
-			};
-			newpc(() => {});
+			let pc = new RTCPeerConnection();
 			const check = () => {
+				console.log(pc);
 				const state = pc.connectionState;
-				if (state == "connected" || state == "connecting") return false;
-				newpc(check);
+				if (state == "connected" || state == "connecting" || state == "new") return false;
+				pc = new RTCPeerConnection();
 				return true;
 			};
-			let connecting = "";
 			const socket = io("guttyar2213.local:5000");
-			socket.on("self", (e) => {
-				document.getElementById("self").innerText = e.value;
-			});
-			socket.on("device", (e) => {
-				if (connecting) {
-					console.log(e.value, connecting);
-					if (!e.value.includes(connecting)) location.reload();
-				}
-			});
+			socket.on("device", console.log);
+			socket.on("self", console.log);
 			socket.on("offer", async (e) => {
 				if (!check()) {
 					socket.emit("answer", { to: e.from, value: null });
@@ -45,12 +28,7 @@
 					await pc.setLocalDescription(await pc.createAnswer());
 					await eventPromise(pc, "icecandidate", (e, r) => !e.candidate && r());
 					socket.emit("answer", { to: e.from, value: pc.localDescription.toJSON() });
-					connecting = e.from;
 				}
-			});
-			socket.on("close", (e) => {
-				newpc(check);
-				socket.emit("close", { to: e.from, value: null });
 			});
 		</script>
 	</body>

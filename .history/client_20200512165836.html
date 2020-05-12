@@ -25,16 +25,9 @@
 				newpc(check);
 				return true;
 			};
-			let connecting = "";
 			const socket = io("guttyar2213.local:5000");
 			socket.on("self", (e) => {
 				document.getElementById("self").innerText = e.value;
-			});
-			socket.on("device", (e) => {
-				if (connecting) {
-					console.log(e.value, connecting);
-					if (!e.value.includes(connecting)) location.reload();
-				}
 			});
 			socket.on("offer", async (e) => {
 				if (!check()) {
@@ -45,7 +38,6 @@
 					await pc.setLocalDescription(await pc.createAnswer());
 					await eventPromise(pc, "icecandidate", (e, r) => !e.candidate && r());
 					socket.emit("answer", { to: e.from, value: pc.localDescription.toJSON() });
-					connecting = e.from;
 				}
 			});
 			socket.on("close", (e) => {

@@ -28,7 +28,6 @@ io.on("connection", (socket) => {
 	updateSockets();
 	on(socket, "offer", id);
 	on(socket, "answer", id);
-	on(socket, "close", id);
 	console.log("a user connected", id);
 	socket.on("disconnect", () => {
 		sockets.delete(id);

@@ -62,15 +62,13 @@
 
 				updateSourcesList(await getSources(), source);
 				let pc = null;
-				let connecting = device.value;
 				const onSourceChange = () =>
 					getMedia(source.value).then(async (media) => {
 						view.srcObject = media;
 						if (pc) pc.close();
-						socket.emit("close", { to: connecting, value: null });
-						await sockon("close", socket);
 						console.log(pc, media, source.value);
 						pc = await createP2P(media);
+						console.log(pc);
 						socket.emit("offer", { to: device.value, value: pc.localDescription.toJSON() });
 						const answer = await sockon("answer", socket);
 						if (!answer) {
@@ -78,7 +76,6 @@
 							throw new Error("");
 						}
 						pc.setRemoteDescription(new RTCSessionDescription(answer));
-						connecting = device.value;
 					});
 				document.getElementById("reload").addEventListener("click", onSourceChange);
 				source.addEventListener("input", onSourceChange);

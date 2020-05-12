@@ -8,7 +8,6 @@
 		<select id="source"></select>
 		<select id="device"></select>
 		<span id="self"></span>
-		<button id="reload">RELOAD</button>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 		<script src="common.js"></script>
 		<script>
@@ -17,7 +16,7 @@
 				select.innerHTML = "";
 				for (const source of sources) {
 					const el = document.createElement("option");
-					el.setAttribute("value", source.deviceId);
+					el.setAttribute("value", source.sourceId);
 					el.innerText = source.label;
 					if (source.kind === "videoinput") select.appendChild(el);
 				}
@@ -25,7 +24,6 @@
 			const updateDevicesList = (devices, select) => {
 				select.innerHTML = "";
 				for (const device of devices) {
-					if (globalThis.self && device == globalThis.self) continue;
 					const el = document.createElement("option");
 					el.setAttribute("value", device);
 					el.innerText = device;
@@ -44,43 +42,28 @@
 				return pc;
 			};
 			(async () => {
+				const socket = io("guttyar2213.local:5000");
+				socket.on("device", (d) => updateDevicesList(d.value, device));
+				const sockon = (type) => onPromise(socket, type, (d, r) => r(d.value));
 				const view = document.getElementById("view");
 				const source = document.getElementById("source");
 				const device = document.getElementById("device");
 				await getMedia(); // Permission test, ここで取得できなければ処理終了
-
-				const sockon = (type, socket) => onPromise(socket, type, (d, r) => r(d.value));
-				const socket = io("guttyar2213.local:5000");
-				let devices = [];
-				socket.on("device", (d) => {
-					devices = d.value;
-					updateDevicesList(devices, device);
-				});
-				const self = (globalThis.self = await sockon("self", socket));
-				document.getElementById("self").innerText = self;
-				updateDevicesList(devices, device);
-
 				updateSourcesList(await getSources(), source);
-				let pc = null;
-				let connecting = device.value;
+				document.getElementById("self").innerText = await sockon("self");
 				const onSourceChange = () =>
 					getMedia(source.value).then(async (media) => {
 						view.srcObject = media;
 						if (pc) pc.close();
-						socket.emit("close", { to: connecting, value: null });
-						await sockon("close", socket);
-						console.log(pc, media, source.value);
 						pc = await createP2P(media);
 						socket.emit("offer", { to: device.value, value: pc.localDescription.toJSON() });
-						const answer = await sockon("answer", socket);
+						const answer = await sockon("answer");
 						if (!answer) {
 							alert("error");
 							throw new Error("");
 						}
 						pc.setRemoteDescription(new RTCSessionDescription(answer));
-						connecting = device.value;
 					});
-				document.getElementById("reload").addEventListener("click", onSourceChange);
 				source.addEventListener("input", onSourceChange);
 				device.addEventListener("input", onSourceChange);
 				onSourceChange();

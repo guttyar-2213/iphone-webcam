@@ -32,7 +32,6 @@
 			});
 			socket.on("device", (e) => {
 				if (connecting) {
-					console.log(e.value, connecting);
 					if (!e.value.includes(connecting)) location.reload();
 				}
 			});

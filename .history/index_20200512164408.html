@@ -8,7 +8,7 @@
 		<select id="source"></select>
 		<select id="device"></select>
 		<span id="self"></span>
-		<button id="reload">RELOAD</button>
+		<button onclick="onSourceChange">RELOAD</button>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 		<script src="common.js"></script>
 		<script>
@@ -17,7 +17,7 @@
 				select.innerHTML = "";
 				for (const source of sources) {
 					const el = document.createElement("option");
-					el.setAttribute("value", source.deviceId);
+					el.setAttribute("value", source.sourceId);
 					el.innerText = source.label;
 					if (source.kind === "videoinput") select.appendChild(el);
 				}
@@ -62,14 +62,11 @@
 
 				updateSourcesList(await getSources(), source);
 				let pc = null;
-				let connecting = device.value;
+				globalThis.onSourceChange = () => onSourceChange();
 				const onSourceChange = () =>
 					getMedia(source.value).then(async (media) => {
 						view.srcObject = media;
 						if (pc) pc.close();
-						socket.emit("close", { to: connecting, value: null });
-						await sockon("close", socket);
-						console.log(pc, media, source.value);
 						pc = await createP2P(media);
 						socket.emit("offer", { to: device.value, value: pc.localDescription.toJSON() });
 						const answer = await sockon("answer", socket);
@@ -78,9 +75,7 @@
 							throw new Error("");
 						}
 						pc.setRemoteDescription(new RTCSessionDescription(answer));
-						connecting = device.value;
 					});
-				document.getElementById("reload").addEventListener("click", onSourceChange);
 				source.addEventListener("input", onSourceChange);
 				device.addEventListener("input", onSourceChange);
 				onSourceChange();
