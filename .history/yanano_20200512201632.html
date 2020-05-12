@@ -1,0 +1,31 @@
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<video autoplay id="remote"></video>
+		<textarea id="send"></textarea>
+		<textarea id="recv"></textarea>
+		<button id="rb"></button>
+		<script>
+			(async () => {
+				const remote = document.getElementById("remote");
+				const send = document.getElementById("send");
+				const recv = document.getElementById("recv");
+				const rb = document.getElementById("rb");
+				rb.addEventListener("click", () => {
+					const pc = new RTCPeerConnection({ iceServers: [] });
+					pc.addEventListener("icecandidate", (e) => {
+						if (e.candidate) {
+							send.value = JSON.stringify(pc.localDescription.toJSON());
+						}
+					});
+					pc.addTransceiver("video", { direction: "recvonly" });
+					globalThis.pc.setRemoteDescription(new RTCSessionDescription(JSON.stringify(recv.value)));
+				});
+			})();
+		</script>
+	</body>
+</html>

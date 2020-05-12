@@ -1,0 +1,61 @@
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<video autoplay id="view"></video>
+		<select id="source"></select>
+		<textarea id="send"></textarea>
+		<textarea id="recv"></textarea>
+		<button id="rb"></button>
+		<script>
+			const getSources = () => navigator.mediaDevices.enumerateDevices();
+			const updateSourcesList = (sources, select) => {
+				select.innerHTML = "";
+				for (const source of sources) {
+					const el = document.createElement("option");
+					el.setAttribute("value", source.deviceId);
+					el.innerText = source.label;
+					if (source.kind === "videoinput") select.appendChild(el);
+				}
+			};
+			const getMedia = (id) =>
+				navigator.mediaDevices.getUserMedia({
+					video: { deviceId: id /* width: { ideal: 4096 }, height: { ideal: 2160 } */ },
+				});
+			const create = (view, media, send) => {
+				const pc = new RTCPeerConnection({ iceServers: [] });
+				pc.addEventListener("icecandidate", (e) => {
+					if (e.candidate) {
+						send.value = JSON.stringify(pc.localDescription.toJSON());
+					}
+				});
+				for (const track of media.getTracks()) pc.addTrack(track, media);
+				pc.addTransceiver("video", { direction: "sendonly" });
+				pc.createOffer().then((o) => pc.setLocalDescription(o));
+				return pc;
+			};
+			(async () => {
+				const view = document.getElementById("view");
+				const source = document.getElementById("source");
+				const send = document.getElementById("send");
+				const recv = document.getElementById("recv");
+				const rb = document.getElementById("rb");
+				await getMedia();
+				updateSourcesList(await getSources(), source);
+				const onSourceChange = () =>
+					getMedia(source.value).then(async (media) => {
+						view.srcObject = media;
+						console.log((globalThis.pc = create(view, media, send)));
+					});
+				source.addEventListener("input", onSourceChange);
+				rb.addEventListener("click", () => {
+					globalThis.pc.setRemoteDescription(new RTCSessionDescription(JSON.stringify(recv.value)));
+				});
+				onSourceChange();
+			})();
+		</script>
+	</body>
+</html>

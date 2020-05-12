@@ -1,0 +1,53 @@
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<video autoplay id="view"></video>
+		<select id="source"></select>
+		<script>
+			const getSources = () => navigator.mediaDevices.enumerateDevices();
+			const updateSourcesList = (sources, select) => {
+				select.innerHTML = "";
+				for (const source of sources) {
+					const el = document.createElement("option");
+					el.setAttribute("value", source.deviceId);
+					el.innerText = source.label;
+					if (source.kind === "videoinput") select.appendChild(el);
+				}
+			};
+			const getMedia = (id) =>
+				navigator.mediaDevices.getUserMedia({
+					video: { deviceId: id /* width: { ideal: 4096 }, height: { ideal: 2160 } */ },
+				});
+			let pc = null;
+			const create = (view, media) => {
+				const lpc = new RTCPeerConnection({ iceServers: [] });
+				lpc.addEventListener("icecandidate", (e) => {
+					if (e.candidate) {
+						console.log(lpc.localDescription);
+					}
+				});
+				for (const track of media.getTracks()) lpc.addTrack(track, media);
+				lpc.addTransceiver("video", { direction: "sendonly" });
+				lpc.createOffer().then((o) => lpc.setLocalDescription(o));
+				return lpc;
+			};
+			(async () => {
+				const view = document.getElementById("view");
+				const source = document.getElementById("source");
+				await getMedia();
+				updateSourcesList(await getSources(), source);
+				const onSourceChange = () =>
+					getMedia(source.value).then(async (media) => {
+						view.srcObject = media;
+						if (pc) pc.close();
+					});
+				source.addEventListener("input", onSourceChange);
+				onSourceChange();
+			})();
+		</script>
+	</body>
+</html>
