@@ -332,8 +332,8 @@
 
       if ('addTransceiver' in peerConnection) {
         console.log('-- use addTransceiver() for recvonly --');
-        peerConnection.addTransceiver('video', { direction: "recvonly" });
-        peerConnection.addTransceiver('audio', { direction: "recvonly" });
+        peerConnection.addTransceiver('video').setDirection('recvonly');
+        peerConnection.addTransceiver('audio').setDirection('recvonly');
       }
     }
 
