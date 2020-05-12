@@ -59,25 +59,25 @@ app.post("/", async (req, res) => {
 	console.log(d);
 	if (d.type == "fetch") {
 		await wait3();
-		res.status(200).send(JSON.stringify({ type: "ok", value: server }));
+		res.send(JSON.stringify({ type: "ok", value: server }));
 		return;
 	}
 	if (d.type == "client") {
 		if (client) {
-			res.status(409).send(JSON.stringify({ type: "error", value: "Preceding visitor" }));
+			res.send(JSON.stringify({ type: "error", value: "Preceding visitor" }));
 			return;
 		}
 		client = d.value;
 	}
 	if (d.type == "server") {
 		if (server) {
-			res.status(409).send(JSON.stringify({ type: "error", value: "Preceding visitor" }));
+			res.send(JSON.stringify({ type: "error", value: "Preceding visitor" }));
 			return;
 		}
 		server = d.value;
 	}
 	await wait();
-	res.status(200).send(JSON.stringify({ type: "ok", value: d.type == "client" ? server : client }));
+	res.send(JSON.stringify({ type: "ok", value: d.type == "client" ? server : client }));
 	if (d.type == "client") {
 		cs = true;
 	}
