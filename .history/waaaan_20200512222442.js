@@ -55,8 +55,8 @@ const wait3 = () =>
 	});
 
 app.post("/", async (req, res) => {
-	const d = JSON.parse(req.body.v);
-	console.log(d);
+	console.log(JSON.parse(req.body.v));
+	const d = req.body;
 	if (d.type == "fetch") {
 		await wait3();
 		res.json({ type: "ok", value: server });
@@ -87,5 +87,5 @@ app.post("/", async (req, res) => {
 	await wait2();
 });
 
-// app.listen(5000, "0.0.0.0");
-https.createServer(ssl, app).listen(5000, "0.0.0.0");
+app.listen(5000, "0.0.0.0");
+// https.createServer(ssl, app).listen(5000, "0.0.0.0");

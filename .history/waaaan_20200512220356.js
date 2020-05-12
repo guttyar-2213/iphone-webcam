@@ -55,29 +55,29 @@ const wait3 = () =>
 	});
 
 app.post("/", async (req, res) => {
-	const d = JSON.parse(req.body.v);
-	console.log(d);
+	console.log(req);
+	const d = req.body;
 	if (d.type == "fetch") {
 		await wait3();
-		res.json({ type: "ok", value: server });
+		res.send(JSON.stringify({ type: "ok", value: server }));
 		return;
 	}
 	if (d.type == "client") {
 		if (client) {
-			res.json({ type: "error", value: "Preceding visitor" });
+			res.send(JSON.stringify({ type: "error", value: "Preceding visitor" }));
 			return;
 		}
 		client = d.value;
 	}
 	if (d.type == "server") {
 		if (server) {
-			res.json({ type: "error", value: "Preceding visitor" });
+			res.send(JSON.stringify({ type: "error", value: "Preceding visitor" }));
 			return;
 		}
 		server = d.value;
 	}
 	await wait();
-	res.json({ type: "ok", value: d.type == "client" ? server : client });
+	res.send(JSON.stringify({ type: "ok", value: d.type == "client" ? server : client }));
 	if (d.type == "client") {
 		cs = true;
 	}
@@ -87,5 +87,4 @@ app.post("/", async (req, res) => {
 	await wait2();
 });
 
-// app.listen(5000, "0.0.0.0");
 https.createServer(ssl, app).listen(5000, "0.0.0.0");
