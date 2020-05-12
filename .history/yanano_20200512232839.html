@@ -37,8 +37,7 @@
 					});
 					pc.addEventListener("connectionstatechange", () => {
 						if (pc.connectionState == "connected" || pc.connectionState == "connecting") return;
-						console.log(pc.connectionState);
-						location.reload();
+						rb.click();
 					});
 					pc.addTransceiver("video", { direction: "recvonly" });
 					fetch("https://guttyar2213.local:5000", {
