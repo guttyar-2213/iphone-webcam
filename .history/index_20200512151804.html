@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+	</head>
+	<body>
+		<video id="view" playsinline autoplay></video>
+		<select id="source"></select>
+		<select id="device"></select>
+		<span id="self"></span>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+		<script>
+			const onPromise = (socket, type, callback) => new Promise((r) => socket.on(type, (d) => callback(d, r)));
+			const getSources = () => navigator.mediaDevices.enumerateDevices();
+			const updateSourcesList = (source, select) => {
+				select.innerHTML = "";
+				for (const source of source) {
+					const el = document.createElement("option");
+					el.setAttribute("value", source.sourceId);
+					el.innerText = source.label;
+					if (source.kind === "videoinput") select.appendChild(el);
+				}
+			};
+			const updateDevicesList = (devices, select) => {
+				select.innerHTML = "";
+				for (const device of devices) {
+					const el = document.createElement("option");
+					el.setAttribute("value", device);
+					el.innerText = device;
+					select.appendChild(el);
+				}
+			};
+			const getMedia = (id) =>
+				navigator.mediaDevices.getUserMedia({
+					video: { deviceId: id, width: { ideal: 4096 }, height: { ideal: 2160 } },
+				});
+			const createP2P = async (media) => {
+				const pc = new RTCPeerConnection();
+				for (const track of media.getTracks()) pc.addTrack(track, media);
+				await pc.setLocalDescription(await pc.createOffer());
+				await eventPromise(pc, "icecandidate", (e, r) => !e.candidate && r());
+				return pc;
+			};
+			(async () => {
+				const socket = io("guttyar2213.local:5000");
+				const sockon = (type) => onPromise(socket, type, (d, r) => r(d.value));
+				const view = document.getElementById("view");
+				const source = document.getElementById("source");
+				const device = document.getElementById("device");
+				await getMedia(); // Permission test, ここで取得できなければ処理終了
+				updateSourcesList(await getSources(), source);
+				updateDevicesList(await sockon("device"), device);
+				document.getElementById("self").innerText = await sockon("self");
+				const onSourceChange = () =>
+					getMedia(source.value).then(async (media) => {
+						view.srcObject = media;
+						if (pc) pc.close();
+						pc = await createP2P(media);
+						socket.emit("offer", { to: device.value, value: pc.localDescription.toJSON() });
+						const answer = await sockon("answer");
+						if (!answer) {
+							alert("error");
+							throw new Error("");
+						}
+						pc.setRemoteDescription(new RTCSessionDescription(answer));
+					});
+				source.addEventListener("input", onSourceChange);
+				device.addEventListener("input", onSourceChange);
+				onSourceChange();
+			})();
+		</script>
+	</body>
+</html>
