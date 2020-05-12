@@ -7,12 +7,6 @@
 		<video id="view" playsinline autoplay></video>
 		<select id="source"></select>
 		<script>
-			const onPromise = (target, type, callback) =>
-				new Promise((r) =>
-					target.addEventListener(type, (e) => {
-						callback(e, r);
-					})
-				);
 			const getDevices = () => navigator.mediaDevices.enumerateDevices();
 			const updateSourcesList = (devices, select) => {
 				select.innerHTML = "";
@@ -32,8 +26,10 @@
 				for (const track of media.getTracks()) pc.addTrack(track, media);
 				const offer = await pc.createOffer();
 				await pc.setLocalDescription(offer);
-				const e = await onPromise(pc, "icecandidate", (e, r) => !e.candidate && r(e));
-				debugger;
+				pc.addEventListener("icecandidate", (e) => {
+					if (e.candidate != null) return;
+					debugger;
+				});
 			};
 			const updateMedia = (view, media) => {
 				view.srcObject = media;
