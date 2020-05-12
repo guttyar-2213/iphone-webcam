@@ -1,7 +1,7 @@
-const fs = require("fs");
-const io = require("socket.io").listen(5000, {
+const io = require("socket.io").listen(3000, {
 	key: fs.readFileSync("/Users/Nagase/Desktop/oreore/server.key").toString(),
 	cert: fs.readFileSync("/Users/Nagase/Desktop/oreore/server.crt").toString(),
+	ca: fs.readFileSync("/Users/Nagase/Desktop/oreore/server.cer").toString(),
 });
 const { v4 } = require("uuid");
 const sockets = new Map();
