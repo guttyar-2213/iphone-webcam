@@ -6,17 +6,16 @@
 	<body>
 		<video id="view" playsinline autoplay></video>
 		<select id="source"></select>
-		<select id="device"></select>
-		<span id="self"></span>
+		<select id="devices"></select>
+		<span id="device"></span>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 		<script>
-			const eventPromise = (target, type, callback) =>
+			const onPromise = (target, type, callback) =>
 				new Promise((r) =>
 					target.addEventListener(type, (e) => {
 						callback(e, r);
 					})
 				);
-			const onPromise = (socket, type, callback) => new Promise((r) => socket.on(type, (d) => callback(d, r)));
 			const getSources = () => navigator.mediaDevices.enumerateDevices();
 			const updateSourcesList = (source, select) => {
 				select.innerHTML = "";
@@ -27,15 +26,6 @@
 					if (source.kind === "videoinput") select.appendChild(el);
 				}
 			};
-			const updateDevicesList = (devices, select) => {
-				select.innerHTML = "";
-				for (const device of devices) {
-					const el = document.createElement("option");
-					el.setAttribute("value", device);
-					el.innerText = device;
-					select.appendChild(el);
-				}
-			};
 			const getMedia = (id) =>
 				navigator.mediaDevices.getUserMedia({
 					video: { deviceId: id, width: { ideal: 4096 }, height: { ideal: 2160 } },
@@ -44,19 +34,14 @@
 				const pc = new RTCPeerConnection();
 				for (const track of media.getTracks()) pc.addTrack(track, media);
 				await pc.setLocalDescription(await pc.createOffer());
-				await eventPromise(pc, "icecandidate", (e, r) => !e.candidate && r());
+				await onPromise(pc, "icecandidate", (e, r) => !e.candidate && r());
 				return pc;
 			};
 			(async () => {
-				const socket = io("guttyar2213.local:5000");
-				const sockon = (type) => onPromise(socket, type, (d, r) => r(d));
 				const view = document.getElementById("view");
 				const source = document.getElementById("source");
-				const device = document.getElementById("device");
 				await getMedia(); // Permission test, ここで取得できなければ処理終了
 				updateSourcesList(await getSources(), source);
-				updateDevicesList(await sockon("device"), device);
-				document.getElementById("self").innerText = await sockon("self");
 				const onSourceChange = () =>
 					getMedia(source.value).then(async (media) => {
 						view.srcObject = media;
@@ -64,7 +49,6 @@
 						pc = await createP2P(media);
 					});
 				source.addEventListener("input", onSourceChange);
-				//	device.addEventListener("input", onDeviceChange)
 				onSourceChange();
 			})();
 		</script>
