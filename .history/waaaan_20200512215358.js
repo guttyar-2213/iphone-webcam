@@ -2,14 +2,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const https = require("https");
 const fs = require("fs");
-const cors = require("cors");
 const app = express();
 const ssl = {
 	key: fs.readFileSync("/Users/Nagase/Desktop/oreore/server.key"),
 	cert: fs.readFileSync("/Users/Nagase/Desktop/oreore/server.crt"),
 };
 
-app.use(cors());
 app.use(
 	bodyParser.urlencoded({
 		extended: true,
@@ -55,6 +53,8 @@ const wait3 = () =>
 	});
 
 app.post("/", async (req, res) => {
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	console.log(req.body);
 	const d = req.body;
 	if (d.type == "fetch") {
