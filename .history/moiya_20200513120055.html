@@ -41,7 +41,7 @@
 			};
 			const getMedia = (id) =>
 				navigator.mediaDevices.getUserMedia({
-					video: { deviceId: id, width: { ideal: 4096 }, height: { ideal: 2160 } },
+					video: { deviceId: id width: { ideal: 4096 }, height: { ideal: 2160 } },
 				});
 			const create = (view, media) => {
 				const pc = new RTCPeerConnection({ iceServers: [] });
