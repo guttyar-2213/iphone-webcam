@@ -61,6 +61,8 @@ const wait3 = () =>
 		}, 100);
 	});
 
+app.use(express.static('public'));
+
 app.post("/", async (req, res) => {
 	const d = JSON.parse(req.body.v);
 	const jv = JSON.stringify(d.value);
